@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gestión del agua en un tanque comunitario | Métodos Numéricos</title>
+<style>
+:root{--bg:#f2f7fa;--card:#fff;--fg:#183344;--mut:#607784;--bd:#d9e4ea;--ac:#1388b8;--ac2:#e7f2f6;--nv:#123b52;--ok:#e9f7f1;--okt:#126342;--wr:#fff4e5;--wrt:#80520c;--er:#fdecea;--ert:#922b21;--th:#edf5f9;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1820;--card:#15232d;--fg:#e4edf2;--mut:#94a9b5;--bd:#27394570;--ac:#3ba8d6;--ac2:#1d3341;--nv:#9fd3ea;--ok:#12312a;--okt:#7fd9b5;--wr:#3a2e14;--wrt:#f0c777;--er:#3d1c19;--ert:#ff9d92;--th:#1b2e3a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1820;--card:#15232d;--fg:#e4edf2;--mut:#94a9b5;--bd:#273945;--ac:#3ba8d6;--ac2:#1d3341;--nv:#9fd3ea;--ok:#12312a;--okt:#7fd9b5;--wr:#3a2e14;--wrt:#f0c777;--er:#3d1c19;--ert:#ff9d92;--th:#1b2e3a;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+header{background:linear-gradient(120deg,#10394f,#137fa7);color:#fff;padding:26px max(16px,calc((100% - 1120px)/2))}
+header small{letter-spacing:.12em;font-size:.75rem;opacity:.85}header h1{margin:6px 0;font-size:clamp(1.5rem,3.4vw,2.3rem)}header p{margin:0;opacity:.92}
+main{max-width:1120px;margin:20px auto;padding:0 16px}
+.top{display:grid;grid-template-columns:minmax(270px,340px) 1fr;gap:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 8px 24px #12304414}
+h2{font-size:1.1rem;margin:0 0 12px;color:var(--nv)}
+.note{background:var(--wr);color:var(--wrt);border-radius:10px;padding:10px 13px;margin:0 0 16px;font-size:.9rem}
+label{display:block;font-weight:650;font-size:.85rem;margin:10px 0 3px}
+input{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit}
+input:focus,button:focus{outline:3px solid #60c9df88}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button{border:0;border-radius:9px;padding:10px 14px;background:var(--ac);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+button.s{background:var(--ac2);color:var(--nv)}
+.msg{margin-top:10px;font-size:.88rem;border-radius:8px;padding:8px 10px;display:none}
+.msg.show{display:block;background:var(--er);color:var(--ert)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.st{background:var(--ac2);border-radius:12px;padding:10px}.st span{display:block;font-size:.75rem;color:var(--mut)}.st b{font-size:1.15rem;color:var(--nv)}
+.stage{display:grid;grid-template-columns:minmax(150px,.55fr) 1.45fr;gap:14px;align-items:center}
+.tw{display:flex;justify-content:center}
+.tank{position:relative;width:150px;height:260px;border:7px solid #6f8995;border-radius:16px 16px 24px 24px;overflow:hidden;background:linear-gradient(90deg,#e5f0f4,#f8fcfd 45%,#dcebf0)}
+.water{position:absolute;bottom:0;left:0;width:100%;height:30%;background:linear-gradient(180deg,#7be0ed,#1596c4);transition:height .15s}
+.water:before{content:"";position:absolute;left:-10%;top:-7px;width:120%;height:14px;border-radius:50%;background:#b3f4f5aa;animation:wv 2.6s ease-in-out infinite alternate}
+@keyframes wv{to{transform:translateX(8px) scaleY(.7)}}
+.tl{position:absolute;left:0;right:0;top:50%;text-align:center;font-weight:800;color:#063f5b;text-shadow:0 1px #fff9}
+.cl{position:absolute;left:0;right:0;top:0;border-top:2px dashed #c62828}
+svg{width:100%;height:auto;display:block;border:1px solid var(--bd);border-radius:12px;background:var(--bg)}
+.gl{stroke:var(--bd)}.tx{fill:var(--mut);font-size:11px}
+.lg{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;margin:8px 0 0}.lg i{display:inline-block;width:18px;height:4px;margin-right:5px;vertical-align:middle;border-radius:2px}
+.pl{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}.pl span{font-size:.88rem;color:var(--mut)}
+.mt{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.int{background:var(--ok);color:var(--okt);border-radius:10px;padding:12px;margin-top:12px;font-size:.93rem}.int.w{background:var(--wr);color:var(--wrt)}
+.tbw{overflow:auto;max-height:420px;border:1px solid var(--bd);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:900px;font-size:.8rem}
+th,td{padding:7px 9px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}th{position:sticky;top:0;background:var(--th);color:var(--nv)}th:first-child,td:first-child{text-align:center}
+.eq{background:var(--ac2);border-left:4px solid var(--ac);padding:10px 13px;border-radius:7px;margin:8px 0;font-family:Consolas,monospace;font-size:.88rem;overflow-x:auto}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.mut{color:var(--mut);font-size:.85rem}
+footer{max-width:1120px;margin:0 auto;padding:0 16px 30px;color:var(--mut);font-size:.82rem}
+@media(max-width:860px){.top,.f2{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.mt{grid-template-columns:1fr 1fr}.stage{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><small>MÉTODOS NUMÉRICOS · DESAFÍO INDIVIDUAL</small>
+<h1>Gestión del agua en un tanque comunitario</h1>
+<p>EDO de primer orden resuelta con solución analítica, Heun (RK2) y Runge-Kutta 4 · Carlos Alejandro Salgado Llusco · INF-373</p></header>
+<main>
+<div class="note"><b>Nota académica:</b> los parámetros iniciales son hipotéticos; no representan mediciones ni predicciones comprobadas de una comunidad específica.</div>
+
+<div class="top">
+<section class="card"><h2>Parámetros</h2>
+<div class="two">
+<div><label for="v0">Volumen inicial V₀ (L)</label><input id="v0" type="number" min="0" value="2000"></div>
+<div><label for="cap">Capacidad (L)</label><input id="cap" type="number" min="1" value="6000"></div>
+<div><label for="qe">Entrada Qe (L/h)</label><input id="qe" type="number" min="0" value="400"></div>
+<div><label for="qc">Consumo Qc (L/h)</label><input id="qc" type="number" min="0" value="250"></div>
+<div><label for="k">Pérdidas k (1/h)</label><input id="k" type="number" min="0" step="any" value="0.03"></div>
+<div><label for="T">Tiempo final (h)</label><input id="T" type="number" min="0.01" step="any" value="24"></div>
+</div>
+<label for="h">Paso h (h)</label><input id="h" type="number" min="0.01" step="any" value="2">
+<div class="acts"><button id="run">Simular</button><button class="s" id="b2">h = 2</button><button class="s" id="b1">h = 1</button><button class="s" id="rs">Restablecer</button></div>
+<div class="msg" id="msg" role="alert"></div>
+<p class="mut" style="margin:12px 0 0">Modelo: dV/dt = Qe − Qc − k·V, con V(0) = V₀. Caudales constantes y pérdida proporcional al volumen.</p>
+</section>
+
+<section class="card"><h2>Estado del tanque y evolución</h2>
+<div class="stats">
+<div class="st"><span>Tiempo</span><b id="sT">0 h</b></div>
+<div class="st"><span>Volumen (RK4)</span><b id="sV">—</b></div>
+<div class="st"><span>Balance</span><b id="sB">—</b></div>
+<div class="st"><span>Equilibrio</span><b id="sE">—</b></div>
+</div>
+<div class="stage"><div class="tw"><div class="tank"><div class="cl" title="Capacidad"></div><div class="water" id="wt"></div><div class="tl" id="tl"></div></div></div>
+<div><svg id="pl" viewBox="0 0 600 320" role="img" aria-label="Volumen del tanque en el tiempo"></svg>
+<div class="lg"><span><i style="background:#273f50"></i>Analítica</span><span><i style="background:#ed9b36"></i>Heun</span><span><i style="background:#1388b8"></i>RK4</span><span><i style="background:#c62828"></i>Capacidad</span></div></div></div>
+<div class="pl"><button id="play">▶ Reproducir</button><button class="s" id="rw">Reiniciar</button><span id="pct"></span></div>
+</section>
+</div>
+
+<section class="card"><h2>Resultados al tiempo final</h2>
+<div class="mt">
+<div class="st"><span>Analítica (L)</span><b id="rE">—</b></div>
+<div class="st"><span>Heun (L)</span><b id="rH">—</b></div>
+<div class="st"><span>RK4 (L)</span><b id="rR">—</b></div>
+<div class="st"><span>Error máx. Heun (L)</span><b id="mH">—</b></div>
+<div class="st"><span>Error máx. RK4 (L)</span><b id="mR">—</b></div>
+</div>
+<div class="int" id="int"></div></section>
+
+<section class="card"><h2>Tabla comparativa y errores</h2>
+<p class="mut" style="margin-top:0">Error absoluto = |exacto − numérico|. Error relativo % = error absoluto / |exacto| × 100.</p>
+<div class="tbw"><table><thead><tr><th>n</th><th>t (h)</th><th>Analítica (L)</th><th>Heun (L)</th><th>RK4 (L)</th><th>Err. Heun (L)</th><th>Err. Heun %</th><th>Err. RK4 (L)</th><th>Err. RK4 %</th></tr></thead><tbody id="tb"></tbody></table></div></section>
+
+<div class="f2">
+<section class="card"><h2>Métodos numéricos</h2>
+<b>Heun (RK2)</b><div class="eq">k₁=f(tₙ,Vₙ); k₂=f(tₙ+h, Vₙ+h·k₁)<br>Vₙ₊₁ = Vₙ + (h/2)(k₁+k₂)</div>
+<b>RK4</b><div class="eq">k₁=f(tₙ,Vₙ); k₂=f(tₙ+h/2, Vₙ+h·k₁/2)<br>k₃=f(tₙ+h/2, Vₙ+h·k₂/2); k₄=f(tₙ+h, Vₙ+h·k₃)<br>Vₙ₊₁ = Vₙ + (h/6)(k₁+2k₂+2k₃+k₄)</div>
+<b>Solución analítica</b><div class="eq">V(t) = a/k + (V₀ − a/k)·e^(−kt),  a = Qe − Qc</div></section>
+<section class="card"><h2>Interpretación y limitaciones</h2>
+<p style="margin-top:0">El volumen tiende al equilibrio a/k: allí lo que entra neto iguala lo que se pierde. Reducir h baja el error de Heun (orden 2) y de RK4 (orden 4) a ritmos distintos.</p>
+<p class="mut">El modelo no incluye rebalse, consumo variable por hora ni cortes de suministro. La capacidad solo sirve de referencia y advertencia. Para una comunidad real harían falta mediciones de caudales, volumen inicial y pérdidas.</p></section>
+</div>
+</main>
+<footer>Proyecto académico · INF-373 Métodos Numéricos I · EDO de primer orden</footer>
+<script>
+const $=i=>document.getElementById(i);
+const fm=(x,d=2)=>Number(x).toLocaleString('es-BO',{minimumFractionDigits:d,maximumFractionDigits:d});
+const sc=x=>Number(x).toExponential(2);
+const DEF={v0:2000,cap:6000,qe:400,qc:250,k:0.03,T:24,h:2};
+let p,a,rows,t=0,timer=null;
+const f=v=>a-p.k*v;
+const ex=x=>p.k<1e-14?p.v0+a*x:a/p.k+(p.v0-a/p.k)*Math.exp(-p.k*x);
+function adv(v,h,m){if(m==='H'){const k1=f(v),k2=f(v+h*k1);return v+h/2*(k1+k2)}
+const k1=f(v),k2=f(v+h*k1/2),k3=f(v+h*k2/2),k4=f(v+h*k3);return v+h/6*(k1+2*k2+2*k3+k4)}
+function vAt(x,m){let v=p.v0,s=0;while(s<x-1e-12){const d=Math.min(p.h,x-s);v=adv(v,d,m);s+=d}return v}
+function read(){const q={};for(const k of Object.keys(DEF))q[k]=parseFloat($(k).value);
+if(Object.values(q).some(x=>!isFinite(x)))return'Completa todos los campos con números válidos.';
+if(q.v0<0||q.qe<0||q.qc<0||q.k<0)return'V₀, caudales y k no pueden ser negativos.';
+if(q.cap<=0)return'La capacidad debe ser mayor que 0.';
+if(q.v0>q.cap)return'El volumen inicial no puede superar la capacidad.';
+if(q.T<=0||q.h<=0||q.h>q.T)return'T debe ser positivo y h debe estar entre 0 y T.';
+if(q.T/q.h>5000)return'Demasiados pasos: aumenta h.';
+p=q;a=q.qe-q.qc;return''}
+function build(){rows=[{n:0,t:0,H:p.v0,R:p.v0}];let x=0,H=p.v0,R=p.v0,n=0;
+while(x<p.T-1e-12){const d=Math.min(p.h,p.T-x);H=adv(H,d,'H');R=adv(R,d,'R');x+=d;n++;rows.push({n,t:x,H,R})}
+rows.forEach(r=>{r.e=ex(r.t);r.eH=Math.abs(r.e-r.H);r.eR=Math.abs(r.e-r.R);r.pH=r.e?r.eH/Math.abs(r.e)*100:NaN;r.pR=r.e?r.eR/Math.abs(r.e)*100:NaN})}
+function plot(){const eC=Array.from({length:61},(_,i)=>[p.T*i/60,ex(p.T*i/60)]);
+const all=[...rows.map(r=>r.H),...rows.map(r=>r.R),...eC.map(c=>c[1]),p.cap];
+let lo=Math.min(0,...all),hi=Math.max(...all)*1.03;if(hi===lo)hi=lo+1;
+const X=x=>52+x/p.T*530,Y=y=>285-(y-lo)/(hi-lo)*255;let g='';
+for(let i=0;i<=4;i++){const y=lo+(hi-lo)*i/4;g+=`<line class="gl" x1="52" x2="582" y1="${Y(y)}" y2="${Y(y)}"/><text class="tx" x="46" y="${Y(y)+4}" text-anchor="end">${fm(y,0)}</text>`}
+for(let i=0;i<=4;i++){const x=p.T*i/4;g+=`<text class="tx" x="${X(x)}" y="303" text-anchor="middle">${fm(x,1)} h</text>`}
+const P=pts=>pts.map((q,i)=>(i?'L':'M')+X(q[0]).toFixed(1)+','+Y(q[1]).toFixed(1)).join(' ');
+const cx=X(t),vy=Y(vAt(t,'R'));
+g+=`<line x1="52" x2="582" y1="${Y(p.cap)}" y2="${Y(p.cap)}" stroke="#c62828" stroke-dasharray="3 4"/>
+<path d="${P(eC)}" fill="none" stroke="#273f50" stroke-width="2.6" stroke-dasharray="7 5"/>
+<path d="${P(rows.map(r=>[r.t,r.H]))}" fill="none" stroke="#ed9b36" stroke-width="2.4"/>
+<path d="${P(rows.map(r=>[r.t,r.R]))}" fill="none" stroke="#1388b8" stroke-width="3"/>
+<line x1="${cx}" x2="${cx}" y1="30" y2="285" stroke="#1388b8" stroke-opacity=".4"/><circle cx="${cx}" cy="${vy}" r="5.5" fill="#1388b8"/>
+<text class="tx" x="316" y="318" text-anchor="middle">Tiempo (horas)</text>`;
+$('pl').innerHTML=g}
+function state(){const v=vAt(t,'R'),e=p.k<1e-14?null:a/p.k,b=f(v);
+$('sT').textContent=fm(t,1)+' h';$('sV').textContent=fm(v,0)+' L';
+$('sB').textContent=(b>=0?'+':'')+fm(b,1)+' L/h';$('sE').textContent=e===null?'Sin equilibrio':fm(e,0)+' L';
+const pc=Math.max(0,Math.min(100,v/p.cap*100));$('wt').style.height=pc+'%';$('tl').textContent=fm(v,0)+' L';
+$('pct').textContent=fm(v/p.cap*100,1)+' % de la capacidad'+(v>p.cap?' · ¡supera la capacidad!':'');plot()}
+function results(){const L=rows.at(-1),mH=Math.max(...rows.map(r=>r.eH)),mR=Math.max(...rows.map(r=>r.eR));
+$('rE').textContent=fm(L.e);$('rH').textContent=fm(L.H);$('rR').textContent=fm(L.R);$('mH').textContent=sc(mH);$('mR').textContent=sc(mR);
+$('tb').innerHTML=rows.map(r=>`<tr><td>${r.n}</td><td>${fm(r.t,2)}</td><td>${fm(r.e,4)}</td><td>${fm(r.H,4)}</td><td>${fm(r.R,4)}</td><td>${sc(r.eH)}</td><td>${isFinite(r.pH)?fm(r.pH,5):'—'}</td><td>${sc(r.eR)}</td><td>${isFinite(r.pR)?fm(r.pR,7):'—'}</td></tr>`).join('');
+const eq=p.k<1e-14?null:a/p.k;let s=`A las ${fm(p.T,1)} h el volumen exacto es ${fm(L.e,1)} L (Heun ${fm(L.H,1)} L; RK4 ${fm(L.R,1)} L). `;
+s+=mR<mH?`RK4 tuvo menor error máximo (${sc(mR)} L frente a ${sc(mH)} L de Heun). `:`Heun tuvo menor o igual error máximo. `;
+let w=false;
+if(eq===null)s+='Con k = 0 el volumen cambia linealmente, sin equilibrio.';
+else if(eq<0)s+='El balance es negativo: el tanque tiende a vaciarse.';
+else if(eq<p.cap)s+=`El tanque se estabiliza en ${fm(eq,0)} L (${fm(eq/p.cap*100,1)} % de la capacidad) y no se llena.`;
+else{w=true;const tf=(p.v0>=p.cap)?0:-Math.log((eq-p.cap)/(eq-p.v0))/p.k;s+=`El equilibrio (${fm(eq,0)} L) supera la capacidad: el modelo llegaría a ${fm(p.cap,0)} L en ≈ ${fm(tf,1)} h y en la realidad habría rebalse, que no se simula.`}
+$('int').textContent=s;$('int').className='int'+(w?' w':'')}
+function stop(){if(timer){clearInterval(timer);timer=null}$('play').textContent='▶ Reproducir'}
+function sim(){const e=read();$('msg').textContent=e;$('msg').className='msg'+(e?' show':'');if(e)return;stop();build();results();t=p.T;state()}
+$('play').onclick=()=>{if(!p)return;if(timer){stop();return}if(t>=p.T-1e-9)t=0;$('play').textContent='Ⅱ Pausar';
+timer=setInterval(()=>{t=Math.min(p.T,t+p.T/150);state();if(t>=p.T)stop()},50)};
+$('rw').onclick=()=>{if(!p)return;stop();t=0;state()};
+$('run').onclick=sim;
+$('b2').onclick=()=>{$('h').value=2;sim()};$('b1').onclick=()=>{$('h').value=1;sim()};
+$('rs').onclick=()=>{for(const k in DEF)$(k).value=DEF[k];sim()};
+for(const k in DEF)$(k).addEventListener('change',sim);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(p)plot()});
+sim();
+</script>
+</body>
+</html>
